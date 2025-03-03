@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
         with:
           submodules: true
 
@@ -33,11 +33,33 @@ jobs:
       - name: Build project
         run: cmake --build .
 
-      - name: Run tests
-        run: ctest --output-on-failure
+      - name: Run Boost.Test
+        run: ctest -R test_version_boost --output-on-failure
+
+      - name: Run GoogleTest
+        run: ctest -R test_version_gtest --output-on-failure
 
       - name: Build package
         run: cmake --build . --target package
 
       - name: Create Release
-        id: create_releas
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.run_number }}
+          release_name: Release ${{ github.run_number }}
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./helloworld-0.0.${{ github.run_number }}-Linux.deb
+          asset_name: helloworld-0.0.${{ github.run_number }}-Linux.deb
+          asset_content_type: application/vnd.debian.binary-package
