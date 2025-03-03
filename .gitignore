@@ -1,0 +1,67 @@
+# Файлы Visual Studio Code
+.vscode/
+
+# Файлы CMake
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+cmake_install.cmake
+CTestTestfile.cmake
+Makefile
+
+# Файлы сборки
+build/
+bin/
+obj/
+out/
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.dylib
+*.a
+*.lib
+*.lo
+
+# Файлы отладки
+*.pdb
+*.ilk
+*.idb
+
+# Файлы временных компиляторов и IDE
+*.log
+*.swp
+*.swo
+*.sdf
+*.tlog
+*.VC.db
+*.VC.opendb
+ipch/
+*.ipdb
+*.iobj
+
+# Файлы кэширования пакетов
+.cache/
+.clangd/
+.clang-tidy
+.clang-format
+CMakeUserPresets.json
+
+# Файлы среды и временные файлы
+*.tmp
+*.bak
+*.dmp
+*.pyc
+*.pyo
+*.class
+
+# Файлы Code Runner (если используешь расширение Code Runner)
+*.coderunner
+
+# MacOS файлы
+.DS_Store
+
+# Windows файлы
+Thumbs.db
+Desktop.ini

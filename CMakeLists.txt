@@ -1,11 +1,12 @@
 cmake_minimum_required(VERSION 3.12)
 
-set(PATCH_VERSION "1" CACHE INTERNAL "Patch version")
-set(PROJECT_VESRION 0.0.${PATCH_VERSION})
+set(PATCH_VERSION "2" CACHE INTERNAL "Patch version")
+set(PROJECT_VERSION 0.0.${PATCH_VERSION})
 
-project(helloworld VERSION ${PROJECT_VESRION})
+project(helloworld VERSION ${PROJECT_VERSION})
 
-option(WITH_BOOST_TEST "Whether to build Boost test" ON)
+option(WITH_BOOST_TEST "Enable Boost.Test" ON)
+option(WITH_GTEST "Enable GoogleTest" ON)
 
 configure_file(version.h.in version.h)
 
@@ -17,57 +18,62 @@ set_target_properties(helloworld_cli helloworld PROPERTIES
     CXX_STANDARD_REQUIRED ON
 )
 
-target_include_directories(helloworld
-    PRIVATE "${CMAKE_BINARY_DIR}"
-)
-
-target_link_libraries(helloworld_cli PRIVATE
-    helloworld
-)
+target_include_directories(helloworld PRIVATE "${CMAKE_BINARY_DIR}")
+target_link_libraries(helloworld_cli PRIVATE helloworld)
 
 if(WITH_BOOST_TEST)
     find_package(Boost COMPONENTS unit_test_framework REQUIRED)
-    add_executable(test_version test_version.cpp)
+    add_executable(test_version_boost test_version_boost.cpp)
 
-    set_target_properties(test_version PROPERTIES
+    set_target_properties(test_version_boost PROPERTIES
         CXX_STANDARD 14
         CXX_STANDARD_REQUIRED ON
     )
 
-    set_target_properties(test_version PROPERTIES
+    set_target_properties(test_version_boost PROPERTIES
         COMPILE_DEFINITIONS BOOST_TEST_DYN_LINK
         INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR}
     )
 
-    target_link_libraries(test_version
+    target_link_libraries(test_version_boost
         ${Boost_LIBRARIES}
         helloworld
     )
 endif()
 
+if(WITH_GTEST)
+    find_package(GTest REQUIRED)
+    add_executable(test_version_gtest test_version_gtest.cpp)
+
+    set_target_properties(test_version_gtest PROPERTIES
+        CXX_STANDARD 14
+        CXX_STANDARD_REQUIRED ON
+    )
+
+    target_link_libraries(test_version_gtest
+        GTest::GTest
+        GTest::Main
+        helloworld
+    )
+endif()
+
 if (MSVC)
-    target_compile_options(helloworld_cli PRIVATE
-        /W4
-    )
-    target_compile_options(helloworld PRIVATE
-        /W4
-    )
+    target_compile_options(helloworld_cli PRIVATE /W4)
+    target_compile_options(helloworld PRIVATE /W4)
     if(WITH_BOOST_TEST)
-        target_compile_options(test_version PRIVATE
-            /W4
-        )
+        target_compile_options(test_version_boost PRIVATE /W4)
+    endif()
+    if(WITH_GTEST)
+        target_compile_options(test_version_gtest PRIVATE /W4)
     endif()
 else ()
-    target_compile_options(helloworld_cli PRIVATE
-        -Wall -Wextra -pedantic -Werror
-    )
-    target_compile_options(helloworld PRIVATE
-        -Wall -Wextra -pedantic -Werror
-    )
+    target_compile_options(helloworld_cli PRIVATE -Wall -Wextra -pedantic -Werror)
+    target_compile_options(helloworld PRIVATE -Wall -Wextra -pedantic -Werror)
     if(WITH_BOOST_TEST)
-        target_compile_options(test_version PRIVATE
-            -Wall -Wextra -pedantic -Werror
-        )
+        target_compile_options(test_version_boost PRIVATE -Wall -Wextra -pedantic -Werror)
+    endif()
+    if(WITH_GTEST)
+        target_compile_options(test_version_gtest PRIVATE -Wall -Wextra -pedantic -Werror)
     endif()
 endif()
 
@@ -80,7 +86,10 @@ set(CPACK_PACKAGE_VERSION_PATCH "${PROJECT_VERSION_PATCH}")
 set(CPACK_PACKAGE_CONTACT example@example.com)
 include(CPack)
 
+enable_testing()
 if(WITH_BOOST_TEST)
-    enable_testing()
-    add_test(test_version test_version)
+    add_test(NAME test_version_boost COMMAND test_version_boost)
+endif()
+if(WITH_GTEST)
+    add_test(NAME test_version_gtest COMMAND test_version_gtest)
 endif()
